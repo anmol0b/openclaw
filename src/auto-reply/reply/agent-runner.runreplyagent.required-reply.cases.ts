@@ -88,6 +88,23 @@ export function registerRequiredReplyCompletionCases({
     },
   );
 
+  it("ends a required turn quietly when its final is a token-only legacy HEARTBEAT_OK", async () => {
+    state.runEmbeddedAgentMock.mockResolvedValueOnce({
+      payloads: [{ text: "HEARTBEAT_OK" }],
+      meta: {
+        finalAssistantRawText: "HEARTBEAT_OK",
+        terminalReply: { disposition: "visible", text: "HEARTBEAT_OK" },
+      },
+    });
+
+    const { run } = createMinimalRun({
+      opts: { isHeartbeat: false },
+      runOverrides: { terminalReplyExpectation: "required" },
+    });
+
+    expect(await run()).toBeUndefined();
+  });
+
   it.each([
     { label: "empty output", payloads: [] },
     { label: "reasoning-only output", payloads: [{ text: "internal", isReasoning: true }] },
