@@ -31,32 +31,6 @@ describe("prepareAgentRunTerminalReply", () => {
     });
   });
 
-  it.each(["HEARTBEAT_OK", " \tHEARTBEAT_OK\n\n", "<b>HEARTBEAT_OK</b>"])(
-    "keeps a token-only legacy %j silent",
-    (rawText) => {
-      expect(prepareAgentRunTerminalReply({ rawText })).toEqual({
-        text: "",
-        terminalReply: { disposition: "silent" },
-      });
-    },
-  );
-
-  it.each(["HEARTBEAT_OK Done.", "Mention HEARTBEAT_OK in an answer.", "heartbeat_ok"])(
-    "keeps %j visible",
-    (text) => {
-      expect(prepareAgentRunTerminalReply({ rawText: text })).toEqual({
-        text,
-        terminalReply: { disposition: "visible", text },
-      });
-    },
-  );
-
-  it("keeps empty output empty for recovery", () => {
-    expect(prepareAgentRunTerminalReply({ rawText: "  " }).terminalReply).toEqual({
-      disposition: "empty",
-    });
-  });
-
   it("keeps full prepared text separate from bounded, sanitized terminal evidence", () => {
     const text = `[Mon 2026-01-01 12:00 UTC] ${"A".repeat(5_000)}`;
     expect(prepareAgentRunTerminalReply({ rawText: `NO_REPLY\n${text}` })).toEqual({

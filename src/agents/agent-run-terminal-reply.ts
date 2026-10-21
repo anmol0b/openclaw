@@ -1,6 +1,5 @@
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { truncateWithMarker } from "@openclaw/normalization-core/utf16-slice";
-import { stripHeartbeatToken } from "../auto-reply/heartbeat.js";
 import { stripInternalMetadataForDisplay } from "../auto-reply/reply/display-text-sanitize.js";
 import { stripMixedSilentReplyTokens } from "../auto-reply/reply/mixed-silent-reply-tokens.js";
 import { isSilentReplyText } from "../auto-reply/tokens.js";
@@ -36,12 +35,7 @@ export type PreparedAgentRunTerminalReply = {
 
 /** Returns full prepared text, or undefined for an explicitly silent reply. */
 export function prepareAgentRunReplyText(rawText: string): string | undefined {
-  // A token-only legacy HEARTBEAT_OK is documented as dropped outside heartbeats;
-  // record it as authored silence so completion does not report a missing answer.
-  if (
-    isSilentReplyText(rawText) ||
-    (rawText.trim() && stripHeartbeatToken(rawText, { mode: "message" }).shouldSkip)
-  ) {
+  if (isSilentReplyText(rawText)) {
     return undefined;
   }
   return stripMixedSilentReplyTokens(rawText) ?? rawText.replace(/[\r\n]\s*NO_REPLY\s*$/iu, "");
