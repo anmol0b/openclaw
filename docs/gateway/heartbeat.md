@@ -180,7 +180,7 @@ without repeating the same admission attempt.
 - `openclaw system heartbeat last --json` reports a confirmed message-tool send to the heartbeat recipient as `sent`, without sending another acknowledgment.
 - If the heartbeat starts background work without sending an update, its status event reports `skipped` with reason `background-work`. Check the task for completion. This is not an all-clear acknowledgment.
 
-Outside heartbeats, stray `HEARTBEAT_OK` at the start/end of a message is stripped and logged. A message that is only `HEARTBEAT_OK` is dropped.
+Outside heartbeats, stray `HEARTBEAT_OK` at the start/end of a message is stripped and logged. A message that is only `HEARTBEAT_OK` is dropped and ends the turn silently, like `NO_REPLY`, without a missing-answer notice. Prefer `NO_REPLY` for new instructions.
 
 ## Config
 
