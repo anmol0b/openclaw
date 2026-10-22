@@ -28,15 +28,8 @@ export function resolveAutomationReplyState(
     !result.meta?.error &&
     result.meta?.aborted !== true &&
     !terminalFailurePayload;
-  const terminalReply = result.meta?.terminalReply;
-  // Outside heartbeats, delivery drops a token-only legacy HEARTBEAT_OK; that is
-  // authored silence like NO_REPLY, not a missing answer.
   const authoredSilence =
-    successfulTerminal &&
-    (terminalReply?.disposition === "silent" ||
-      (!isHeartbeat &&
-        terminalReply?.disposition === "visible" &&
-        stripHeartbeatToken(terminalReply.text, { mode: "message" }).shouldSkip));
+    successfulTerminal && result.meta?.terminalReply?.disposition === "silent";
   const pendingContinuation =
     result.meta?.yielded === true ||
     result.meta?.continuationPending === true ||
