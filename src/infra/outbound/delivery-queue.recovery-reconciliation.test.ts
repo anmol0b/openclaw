@@ -11,7 +11,8 @@ import {
 } from "./delivery-queue.test-helpers.js";
 
 const resolveOutboundChannelMessageAdapterMock = vi.hoisted(() => vi.fn());
-vi.mock("./channel-resolution.js", () => ({
+vi.mock("./channel-resolution.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./channel-resolution.js")>()),
   resolveOutboundChannelMessageAdapter: resolveOutboundChannelMessageAdapterMock,
 }));
 
