@@ -457,6 +457,7 @@ const repositoryScriptEntries = [
   "scripts/perf/plugin-config-publication-measure.mjs!",
   "scripts/perf/plugin-metadata-frame-measure.ts!",
   "scripts/perf/plugin-sdk-defensive-measure.ts!",
+  "scripts/perf/plugin-session-action-measure.ts!",
   "scripts/perf/presence-delivery-measure.ts!",
   "scripts/perf/project-publication-fetch-measure.ts!",
   "scripts/perf/provider-rate-limit-http-retention.ts!",
@@ -675,6 +676,7 @@ const repositoryScriptEntries = [
   // Maintained source headers invoke these standalone commands and external preload by exact path.
   "scripts/bench-control-ui-talk.ts!",
   "scripts/perf/agent-catalog-display-measure.ts!",
+  "scripts/perf/mention-target-preparation-measure.ts!",
   "scripts/perf/agent-event-routing-measure.ts!",
   "scripts/perf/archive-record-framing-measure.mjs!",
   "scripts/perf/board-grid-measure.ts!",
@@ -804,6 +806,7 @@ const repositoryScriptEntries = [
   "scripts/perf/async-work-scope-measure.ts!",
   "scripts/perf/local-workspace-callers-measure.ts!",
   "scripts/perf/local-workspace-checkpoint-measure.ts!",
+  "scripts/perf/local-workspace-stopped-stream-measure.ts!",
   "scripts/perf/local-workspace-retention.ts!",
   "scripts/perf/plugin-iterator-membrane-measure.ts!",
   "scripts/perf/plugin-generation-retention.ts!",
