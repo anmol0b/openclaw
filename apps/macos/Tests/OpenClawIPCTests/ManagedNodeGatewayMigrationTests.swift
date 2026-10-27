@@ -1151,9 +1151,10 @@ struct ManagedNodeGatewayMigrationTests {
         #expect(ManagedNodeGatewayMigration.runtimePinMatchesInstallation(
             nil, runtime: runtime, allowMissing: true))
         for (path, kind, accepted) in [
-            (runtime.bun.path, "bun", true),
+            (runtime.serviceBun.path, "bun", true),
+            (runtime.bun.path, "bun", false),
             ("/operator/bin/bun", "bun", false),
-            (runtime.bun.path, "node", false),
+            (runtime.serviceBun.path, "node", false),
         ] {
             let record = Self.runtimeIntent(revision: "installed", runtime: kind, path: path)
             #expect(ManagedNodeGatewayMigration.runtimePinMatchesInstallation(

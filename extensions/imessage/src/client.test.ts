@@ -57,6 +57,8 @@ function emitRpcError(child: MockChild, error: { code: number; message: string; 
 let IMessageRpcClient: typeof import("./client.js").IMessageRpcClient;
 let IMessageRpcRequestError: typeof import("./client.js").IMessageRpcRequestError;
 let privateApiStatus: typeof import("./private-api-status.js");
+let requestIMessageRpcSend: typeof import("./send-transport.js").requestIMessageRpcSend;
+let PlatformMessageNotDispatchedError: typeof import("openclaw/plugin-sdk/error-runtime").PlatformMessageNotDispatchedError;
 const fullDiskAccessError =
   "imsg cannot access ~/Library/Messages/chat.db. Grant Full Disk Access to the Gateway/launcher process and restart Gateway.";
 function runtime(error: (...args: unknown[]) => void) {
@@ -97,6 +99,8 @@ function rpcWrapper(prelude: string[], handle: string[], result: string) {
 beforeAll(async () => {
   vi.resetModules();
   ({ IMessageRpcClient, IMessageRpcRequestError } = await import("./client.js"));
+  ({ requestIMessageRpcSend } = await import("./send-transport.js"));
+  ({ PlatformMessageNotDispatchedError } = await import("openclaw/plugin-sdk/error-runtime"));
   // Imported after resetModules so this is the same module instance the client
   // mutates; a separate copy would hold a different cache map.
   privateApiStatus = await import("./private-api-status.js");
@@ -487,6 +491,95 @@ describe("IMessageRpcClient child stream error handling", () => {
       ["rpc", "--json", "--db", "/Users/gateway/Library/Messages/chat.db"],
       { stdio: ["pipe", "pipe", "pipe"] },
     );
+  });
+});
+
+describe("IMessageRpcClient Messages Automation diagnostics", () => {
+  it.each([
+    { remoteHost: undefined, appleScriptCode: -1712, retrySafe: true },
+    { remoteHost: "messages-mac", appleScriptCode: -1743, retrySafe: false },
+  ])(
+    "explains AppleScript $appleScriptCode in the actual launch context without changing send custody",
+    async ({ remoteHost, appleScriptCode, retrySafe }) => {
+      const client = await startClient({ remoteHost });
+      const written = Promise.withResolvers<void>();
+      const write = vi.spyOn(child.stdin, "write").mockImplementation((_line, callback) => {
+        callback?.(null);
+        written.resolve();
+        return true;
+      });
+      const data = {
+        disposition: retrySafe ? "not_started" : "may_have_completed",
+        retry_safe: retrySafe,
+        operation: "send",
+        transport: "applescript",
+        detail: `Messages automation failed with AppleScript error ${appleScriptCode}.`,
+      };
+      const sending = requestIMessageRpcSend(
+        client,
+        "send",
+        { to: "+15555550123", text: "private synthetic message" },
+        0,
+        {},
+      ).catch((error: unknown) => error);
+      await written.promise;
+      emitRpcError(child, { code: -32603, message: "Delivery failed before dispatch", data });
+      const error = await sending;
+      const rpcError = retrySafe ? (error as Error).cause : error;
+
+      expect(rpcError).toBeInstanceOf(IMessageRpcRequestError);
+      expect(rpcError).toMatchObject({ code: -32603, data });
+      expect(error).toHaveProperty(
+        "message",
+        expect.stringContaining("System Settings > Privacy & Security > Automation"),
+      );
+      expect(error).toHaveProperty(
+        "message",
+        expect.stringContaining(
+          appleScriptCode === -1712
+            ? "A missing Automation grant is one possible cause"
+            : "Messages Automation was denied",
+        ),
+      );
+      if (remoteHost) {
+        expect(error).toHaveProperty("message", expect.stringContaining("SSH/wrapper process"));
+        expect((error as Error).message).not.toContain(process.execPath);
+      } else {
+        expect(error).toHaveProperty("message", expect.stringContaining(process.execPath));
+        expect(error).toHaveProperty("message", expect.stringContaining("Node to Bun"));
+      }
+      if (retrySafe) {
+        expect(error).toBeInstanceOf(PlatformMessageNotDispatchedError);
+        expect(error).toHaveProperty("retryable", true);
+      } else {
+        expect(error).not.toBeInstanceOf(PlatformMessageNotDispatchedError);
+      }
+      expect((error as Error).message).not.toContain("private synthetic message");
+      expect((error as Error).message).not.toContain("+15555550123");
+      expect(write).toHaveBeenCalledOnce();
+      expect(runIMessageCliJsonCommandMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { transport: "bridge_v2", detail: "Messages automation failed with AppleScript error -1712." },
+    {
+      transport: "applescript",
+      detail: "Messages automation failed with AppleScript error -1708.",
+    },
+    { transport: "applescript", detail: "The operation timed out." },
+  ])("does not diagnose an unrelated failure as Automation: $detail", async (data) => {
+    const client = await startClient();
+    const sending = client.request("send", {}, { timeoutMs: 0 }).catch((error: unknown) => error);
+    emitRpcError(child, { code: -32603, message: "Delivery failed", data });
+    const error = await sending;
+    expect(error).toBeInstanceOf(IMessageRpcRequestError);
+    expect(error).toMatchObject({
+      code: -32603,
+      data,
+      message: `Delivery failed: code=-32603 ${JSON.stringify(data, null, 2)}`,
+    });
+    expect(runIMessageCliJsonCommandMock).not.toHaveBeenCalled();
   });
 });
 
