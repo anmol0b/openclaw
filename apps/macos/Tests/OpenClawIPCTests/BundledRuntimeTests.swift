@@ -545,7 +545,7 @@ struct BundledRuntimeTests {
         return runtimes
     }
 
-    @Test func `service Bun keeps one real path across builds and restores it after a failed install`() async throws {
+    @Test func `service Bun keeps one real path and follows the installed service after a failed install`() async throws {
         let home = try makeTempDirForTests()
         defer { try? FileManager.default.removeItem(at: home) }
         let profile = AppProfile(environment: ["OPENCLAW_PROFILE": "service-bun-fixture"])
@@ -563,7 +563,9 @@ struct BundledRuntimeTests {
                 .filter { $0 != "bun" }
         }
 
-        try await old.stageServiceBun()(true)
+        // A first move can fail after the installer published the service; its executable must remain.
+        try await old.stageServiceBun()(false)
+        #expect(serviceMatches(old))
         // A real file, not a link: macOS records the resolved executable path for privacy grants.
         #expect((try? FileManager.default.destinationOfSymbolicLink(atPath: service.path)) == nil)
         #expect(FileManager.default.isExecutableFile(atPath: service.path))

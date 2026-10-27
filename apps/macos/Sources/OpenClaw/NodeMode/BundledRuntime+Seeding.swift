@@ -108,10 +108,12 @@ extension BundledRuntime {
     }
 
     /// Publishes this build's Bun at `serviceBun` with an atomic rename; a running service keeps its
-    /// old inode. Call the result with the install outcome: a failed install restores the previous
-    /// clone so an unchanged service never restarts on another build's Bun.
+    /// old inode. Call the result with whether the installed service now runs this build: if it does
+    /// not, the previous clone comes back so that service never restarts on another build's Bun.
+    /// Without a previous clone the new one stays; nothing else names the path, and deleting it could
+    /// strand a service the installer published before failing.
     @concurrent
-    func stageServiceBun() async throws -> @Sendable (_ installed: Bool) -> Void {
+    func stageServiceBun() async throws -> @Sendable (_ published: Bool) -> Void {
         let fileManager = FileManager.default
         let target = self.serviceBun
         if fileManager.contentsEqual(atPath: target.path, andPath: self.bun.path) { return { _ in } }
@@ -131,13 +133,12 @@ extension BundledRuntime {
             if let backup { try? fileManager.removeItem(at: backup) }
             throw error
         }
-        return { installed in
-            if installed {
-                if let backup { try? FileManager.default.removeItem(at: backup) }
-            } else if let backup {
-                _ = rename(backup.path, target.path)
+        return { published in
+            guard let backup else { return }
+            if published {
+                try? FileManager.default.removeItem(at: backup)
             } else {
-                try? FileManager.default.removeItem(at: target)
+                _ = rename(backup.path, target.path)
             }
         }
     }

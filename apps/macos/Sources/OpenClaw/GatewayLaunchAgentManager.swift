@@ -738,7 +738,10 @@ extension GatewayLaunchAgentManager {
             expectedServiceAuthority: expectedServiceAuthority,
             checkCurrent: checkCurrent)
         if case let .failure(message) = result {
-            finishStaging?(false)
+            // The installer can publish the service and then fail, so settle on what is installed.
+            let installedRoot = self.installedServiceCLI()?.prefix.last
+                .flatMap(BundledRuntime.init(serviceEntrypoint:))?.root.resolvingSymlinksInPath()
+            finishStaging?(installedRoot != nil && installedRoot == serviceRuntime?.root.resolvingSymlinksInPath())
             return message ?? "Gateway daemon command failed"
         }
         finishStaging?(true)
