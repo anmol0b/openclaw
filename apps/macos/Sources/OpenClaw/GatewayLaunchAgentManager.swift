@@ -25,10 +25,10 @@ enum GatewayLaunchAgentManager {
             guard concrete.first == runtime.bun.resolvingSymlinksInPath().path ||
                 (concrete.first == runtime.serviceBun.resolvingSymlinksInPath().path &&
                     FileManager.default.contentsEqual(atPath: runtime.serviceBun.path, andPath: runtime.bun.path)),
-                  let entry = GatewayLaunchAgentManager.serviceCLIEntrypoint(concrete),
-                  let sqliteLibrary,
-                  URL(fileURLWithPath: sqliteLibrary).resolvingSymlinksInPath() ==
-                  runtime.sqliteLibrary.resolvingSymlinksInPath()
+                let entry = GatewayLaunchAgentManager.serviceCLIEntrypoint(concrete),
+                let sqliteLibrary,
+                URL(fileURLWithPath: sqliteLibrary).resolvingSymlinksInPath() ==
+                runtime.sqliteLibrary.resolvingSymlinksInPath()
             else { return false }
             return GatewayLaunchAgentManager.serviceCLIEntrypoints.contains {
                 runtime.packageRoot.appendingPathComponent($0).resolvingSymlinksInPath() == entry
@@ -723,7 +723,8 @@ extension GatewayLaunchAgentManager {
         var finishStaging: (@Sendable (Bool) -> Void)?
         if let serviceRuntime, args.first == "install" {
             do { finishStaging = try await serviceRuntime.stageServiceBun() } catch {
-                return "The Gateway service runtime could not be prepared (\(error.localizedDescription)). Retry, or reinstall OpenClaw.app if it keeps failing."
+                return "The Gateway service runtime could not be prepared (\(error.localizedDescription)). " +
+                    "Retry, or reinstall OpenClaw.app if it keeps failing."
             }
         }
         let result = await self.runDaemonCommandResult(
