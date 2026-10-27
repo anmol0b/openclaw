@@ -505,7 +505,7 @@ describe("IMessageRpcClient Messages Automation diagnostics", () => {
     };
     const sending = client.request("send", {}, { timeoutMs: 0 }).catch((error: unknown) => error);
     emitRpcError(child, { code: -32603, message: "Delivery failed", data });
-    const message = ((await sending) as IMessageRpcRequestError).message;
+    const message = ((await sending) as Error).message;
     expect(message.includes("Privacy & Security > Automation")).toBe(guidance.length > 0);
     for (const text of guidance) {
       expect(message).toContain(text);
