@@ -269,6 +269,7 @@ enum GatewayLaunchAgentManager {
                 allowUnconfigured: allowUnconfigured,
                 runtime: runtime,
                 launchAgentExists: existed)
+            var resumedRuntime: BundledRuntime?
             if !existed, let preserved = whenMissingCLI {
                 guard let executable = preserved.prefix.first, executable.hasPrefix("/"),
                       ["node", "bun"].contains(URL(fileURLWithPath: executable).lastPathComponent)
@@ -278,13 +279,17 @@ enum GatewayLaunchAgentManager {
                 if preserved.hadRuntimePin ||
                     !self.isManagedNode(executable, stateDirectory: AppProfile.current.stateDirectoryURL())
                 {
-                    arguments += ["--runtime-path", preserved.sourcePrefix?.first ?? executable]
+                    let runtimePath = preserved.sourcePrefix?.first ?? executable
+                    arguments += ["--runtime-path", runtimePath]
+                    // A resume onto the stable service Bun needs its build staged there first.
+                    resumedRuntime = preserved.prefix.last.flatMap(BundledRuntime.init(serviceEntrypoint:))
+                        .flatMap { $0.serviceBun.path == runtimePath ? $0 : nil }
                 }
             }
             return await self.runDaemonCommand(
                 arguments,
                 runtime: runtime,
-                serviceRuntime: runtime,
+                serviceRuntime: runtime ?? resumedRuntime,
                 installedCLI: installedCLI,
                 expectedServiceAuthority: custody,
                 checkCurrent: checkCurrent)
