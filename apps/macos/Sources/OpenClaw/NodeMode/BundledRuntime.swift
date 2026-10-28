@@ -16,9 +16,9 @@ struct BundledRuntime: Sendable {
         [self.bun.path, self.packageRoot.appendingPathComponent("openclaw.mjs").path]
     }
 
-    /// macOS keys a bare executable's privacy grants (Automation, Full Disk Access) by its real
-    /// path, so a per-build Bun loses them on every app update. App-managed services run a clone
-    /// of this build's Bun at one stable path; the package and SQLite library stay per build.
+    /// macOS keys a bare executable's Automation grant by its real path, so a per-build Bun loses
+    /// it on every app update. App-managed services run a clone of this build's Bun at one stable
+    /// path; the package and SQLite library stay per build.
     var serviceBun: URL {
         self.root.deletingLastPathComponent().appendingPathComponent("service/bun")
     }

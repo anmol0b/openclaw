@@ -47,11 +47,14 @@ directory clone when available, falling back to a file copy, and are published a
 Bun checks succeed. The child uses the concrete build directory so it keeps its
 matching package and SQLite library. An app-managed Bun service also loads its
 package and SQLite library from that directory, but runs a copy of that build's
-Bun at the stable path `<state>/runtime/service/bun`. macOS records Automation
-and Full Disk Access grants for a standalone executable by its path, so a
-stable path lets later app updates keep those grants. The first update that
-moves a service onto this path, including a move from Node, still needs the
-grants approved once for the new executable.
+Bun at the stable path `<state>/runtime/service/bun`. macOS records the
+Messages Automation grant for a standalone executable by its path, so a stable
+path lets later app updates keep it. The first update that moves a service onto
+this path, including a move from Node, still needs Automation approved once for
+the new executable. Full Disk Access is also checked against the executable's
+code signature, so an update that replaces an ad-hoc or source-built Bun can
+lose it while System Settings still shows `bun` as enabled; grant it again for
+`<state>/runtime/service/bun`.
 The `runtime/current` symlink selects the runtime for the terminal CLI shim.
 The app retains the current and previous builds; older copies are removed only
 after Gateway health succeeds and no process runs from them.
