@@ -170,6 +170,22 @@ struct TailscaleIntegrationSectionTests {
         #expect(saveCount == 0)
     }
 
+    @Test(arguments: [
+        ["mode": "token", "token": "existing-token"], // pragma: allowlist secret
+        ["mode": "password", "password": "existing-password"], // pragma: allowlist secret
+    ])
+    func `turning tailscale off keeps gateway authentication`(credentials: [String: String]) {
+        var auth: [String: Any] = credentials
+        auth["allowTailscale"] = true
+        let root = TailscaleIntegrationSection.buildTailscaleConfigRoot(
+            root: ["gateway": ["mode": "local", "tailscale": ["mode": "serve"], "auth": auth]],
+            settings: GatewayTailscaleSettingsSnapshot(mode: .off, requireCredentialsForServe: false, password: ""))
+        let gateway = root["gateway"] as? [String: Any]
+
+        #expect((gateway?["tailscale"] as? [String: Any])?["mode"] as? String == "off")
+        #expect(gateway?["auth"] as? [String: String] == credentials)
+    }
+
     @Test func `tailscale apply validates changed passwords before saving`() async {
         let settings = GatewayTailscaleSettingsSnapshot(
             mode: .funnel, requireCredentialsForServe: true, password: "  ")

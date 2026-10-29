@@ -276,7 +276,7 @@ struct TailscaleIntegrationSection: View {
         }
     }
 
-    private static func buildTailscaleConfigRoot(
+    static func buildTailscaleConfigRoot(
         root originalRoot: [String: Any],
         settings: GatewayTailscaleSettingsSnapshot) -> [String: Any]
     {
@@ -291,7 +291,11 @@ struct TailscaleIntegrationSection: View {
         }
 
         if settings.mode == .off {
-            gateway.removeValue(forKey: "auth")
+            // Only the Tailscale identity allowance belongs to this control; the shared token,
+            // password, and trusted-proxy settings keep authenticating every other client.
+            var auth = gateway["auth"] as? [String: Any] ?? [:]
+            auth.removeValue(forKey: "allowTailscale")
+            gateway["auth"] = auth.isEmpty ? nil : auth
         } else {
             var auth = gateway["auth"] as? [String: Any] ?? [:]
             if settings.mode == .serve, !settings.requireCredentialsForServe {
