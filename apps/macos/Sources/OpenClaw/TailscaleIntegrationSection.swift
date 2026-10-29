@@ -276,7 +276,7 @@ struct TailscaleIntegrationSection: View {
         }
     }
 
-    static func buildTailscaleConfigRoot(
+    private static func buildTailscaleConfigRoot(
         root originalRoot: [String: Any],
         settings: GatewayTailscaleSettingsSnapshot) -> [String: Any]
     {
@@ -357,7 +357,7 @@ struct TailscaleIntegrationSection: View {
     }
 
     @MainActor
-    private static func saveTailscaleSettings(
+    static func saveTailscaleSettings(
         settings: GatewayTailscaleSettingsSnapshot,
         connectionMode: AppState.ConnectionMode) async -> GatewayTailscaleApplyResult
     {
