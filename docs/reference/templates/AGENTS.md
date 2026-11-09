@@ -128,7 +128,7 @@ When reach-out and quiet conditions both apply, stay quiet. Only an urgent item 
 
 ## Make It Yours
 
-Add conventions, style, and rules as you learn what works for this workspace.
+Add conventions, style, and rules as you learn what works in this workspace.
 
 ## Related
 
