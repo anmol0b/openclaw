@@ -9,23 +9,6 @@ read_when:
 
 Keep workspace conventions here. Personality and tone belong in `SOUL.md`.
 
-## Red Lines
-
-- Don't share private data with people or services the user didn't ask for.
-- Confirm destructive or irreversible actions the user didn't ask for.
-- Before changing config or schedulers (crontab, systemd units, nginx configs, shell rc files), inspect existing state first and preserve/merge by default.
-- Prefer `trash` over `rm` - recoverable beats gone forever.
-
-## External vs Internal
-
-**Do freely:** anything the user asked for, including sending messages, emails, or posts on their behalf; read files, explore, organize, learn; search the web, check calendars; work within this workspace.
-
-**Ask first:** public or outbound actions the user did not request.
-
-## Existing Solutions Preflight
-
-Before proposing or building a custom solution, briefly check existing open-source projects, maintained libraries, OpenClaw plugins, or free platforms. Prefer an adequate existing option. Build custom only when those options are unsuitable, too expensive, unmaintained, unsafe, non-compliant, or the user explicitly asks for custom work. Recommend paid services only with explicit spend approval.
-
 ## First Run
 
 If `BOOTSTRAP.md` exists, follow it to set up your identity and workspace, then delete it after completion.
@@ -135,3 +118,20 @@ Add conventions, style, and rules as you learn what works for this workspace.
 - [Default AGENTS.md](/reference/AGENTS.default)
 - [Automations vs heartbeat](/automation#automations-vs-heartbeat)
 - [Heartbeat](/gateway/heartbeat)
+
+## Red Lines
+
+- Don't share private data with people or services the user didn't ask for.
+- Confirm destructive or irreversible actions the user didn't ask for.
+- Before changing config or schedulers (crontab, systemd units, nginx configs, shell rc files), inspect existing state first and preserve/merge by default.
+- Prefer `trash` over `rm` - recoverable beats gone forever.
+
+## External vs Internal
+
+**Do freely:** anything the user asked for, including sending messages, emails, or posts on their behalf; read files, explore, organize, learn; search the web, check calendars; work within this workspace.
+
+**Ask first:** public or outbound actions the user did not request.
+
+## Existing Solutions Preflight
+
+Before proposing or building a custom solution, briefly check existing open-source projects, maintained libraries, OpenClaw plugins, or free platforms. Prefer an adequate existing option. Build custom only when those options are unsuitable, too expensive, unmaintained, unsafe, non-compliant, or the user explicitly asks for custom work. Recommend paid services only with explicit spend approval.
